@@ -137,6 +137,21 @@ export const weatherAPI = {
   },
 };
 
+// Helper function to transform backend crop to frontend format
+const transformCrop = (crop: any): Crop => {
+  return {
+    id: crop.id,
+    name: crop.cropName || crop.name,
+    nameAr: crop.cropNameAr || crop.nameAr || crop.cropName || crop.name,
+    variety: crop.variety,
+    plantingDate: new Date(crop.plantingDate),
+    harvestDate: new Date(crop.harvestDate),
+    farmerId: crop.farmerId,
+    fieldSize: crop.fieldSize,
+    status: (crop.status?.toLowerCase() || 'planning') as Crop['status'],
+  };
+};
+
 // Crops API
 export const cropsAPI = {
   getAll: async (): Promise<Crop[]> => {
@@ -144,37 +159,70 @@ export const cropsAPI = {
       const stored = localStorage.getItem('crops');
       return stored ? JSON.parse(stored) : [];
     }
-    const response = await api.get('/crops');
-    return response.data;
+    try {
+      const response = await api.get('/crops');
+      // Transform backend data to match frontend types
+      return Array.isArray(response.data) 
+        ? response.data.map(transformCrop)
+        : [];
+    } catch (error: any) {
+      console.error('Failed to fetch crops:', error);
+      throw error;
+    }
   },
-  create: async (data: Omit<Crop, 'id' | 'farmerId'>): Promise<Crop> => {
+  create: async (data: any): Promise<Crop> => {
     if (MOCK_MODE) {
       const crops = await cropsAPI.getAll();
       const newCrop: Crop = {
-        ...data,
         id: Date.now().toString(),
+        name: data.cropName || data.name,
+        nameAr: data.cropNameAr || data.nameAr || data.cropName || data.name,
+        variety: data.variety,
+        plantingDate: data.plantingDate,
+        harvestDate: data.harvestDate,
         farmerId: '1', // Mock farmer ID
+        fieldSize: data.fieldSize,
+        status: (data.status?.toLowerCase() || 'planning') as Crop['status'],
       };
       crops.push(newCrop);
       localStorage.setItem('crops', JSON.stringify(crops));
       return newCrop;
     }
-    const response = await api.post('/crops', data);
-    return response.data;
+    try {
+      const response = await api.post('/crops', data);
+      return transformCrop(response.data);
+    } catch (error: any) {
+      console.error('Failed to create crop:', error);
+      throw error;
+    }
   },
-  update: async (id: string, data: Partial<Crop>): Promise<Crop> => {
+  update: async (id: string, data: any): Promise<Crop> => {
     if (MOCK_MODE) {
       const crops = await cropsAPI.getAll();
       const index = crops.findIndex(c => c.id === id);
       if (index !== -1) {
-        crops[index] = { ...crops[index], ...data };
+        crops[index] = { 
+          ...crops[index], 
+          name: data.cropName || data.name || crops[index].name,
+          nameAr: data.cropNameAr || data.nameAr || crops[index].nameAr,
+          variety: data.variety !== undefined ? data.variety : crops[index].variety,
+          plantingDate: data.plantingDate || crops[index].plantingDate,
+          harvestDate: data.harvestDate || crops[index].harvestDate,
+          fieldSize: data.fieldSize !== undefined ? data.fieldSize : crops[index].fieldSize,
+          status: data.status?.toLowerCase() || crops[index].status,
+        };
         localStorage.setItem('crops', JSON.stringify(crops));
         return crops[index];
       }
       throw new Error('Crop not found');
     }
-    const response = await api.put(`/crops/${id}`, data);
-    return response.data;
+    try {
+      const response = await api.put(`/crops/${id}`, data);
+      return transformCrop(response.data);
+    } catch (error: any) {
+      console.error('Failed to update crop:', error);
+      throw error;
+    }
   },
   delete: async (id: string): Promise<void> => {
     if (MOCK_MODE) {
@@ -183,7 +231,12 @@ export const cropsAPI = {
       localStorage.setItem('crops', JSON.stringify(filtered));
       return;
     }
-    await api.delete(`/crops/${id}`);
+    try {
+      await api.delete(`/crops/${id}`);
+    } catch (error: any) {
+      console.error('Failed to delete crop:', error);
+      throw error;
+    }
   },
   getCalendar: async (crop: string, region: string) => {
     if (MOCK_MODE) {

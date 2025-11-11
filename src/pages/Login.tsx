@@ -92,8 +92,8 @@ export const Login: React.FC = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
             <p className="text-sm text-blue-800">
               {isArabic
-                ? '⚠️ وضع التجربة: يمكنك استخدام أي رقم هاتف وأي رمز من 6 أرقام'
-                : '⚠️ Demo Mode: You can use any phone number and any 6-digit code'}
+                ? '⚠️ وضع التطوير: افحص سجلات الخادم للعثور على رمز OTP'
+                : '⚠️ Development Mode: Check server logs to find the OTP code'}
             </p>
           </div>
         </div>

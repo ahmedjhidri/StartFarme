@@ -110,13 +110,14 @@ export const verifyOTPHandler = async (req: Request, res: Response) => {
     });
 
     // Return user data (without sensitive info)
+    // Transform role from uppercase (FARMER) to lowercase (farmer) for frontend
     const userData = {
       id: user.id,
-      role: user.role,
+      role: user.role.toLowerCase() as 'farmer' | 'buyer' | 'expert' | 'admin',
       phone: user.phone,
       email: user.email,
       name: user.name,
-      language: user.language,
+      language: user.language as 'ar' | 'fr',
       farmLocation: user.farmer ? {
         governorate: user.farmer.governorate,
         delegation: user.farmer.delegation,
@@ -127,7 +128,7 @@ export const verifyOTPHandler = async (req: Request, res: Response) => {
       } : undefined,
       farmSize: user.farmer?.farmSize,
       crops: user.farmer?.crops || [],
-      subscriptionTier: user.farmer?.subscriptionTier || 'FREE',
+      subscriptionTier: (user.farmer?.subscriptionTier || 'FREE').toLowerCase() as 'free' | 'premium',
     };
 
     res.json({
@@ -250,11 +251,11 @@ export const updateProfileHandler = async (req: AuthRequest, res: Response) => {
 
     const userData = {
       id: updatedUser!.id,
-      role: updatedUser!.role,
+      role: updatedUser!.role.toLowerCase() as 'farmer' | 'buyer' | 'expert' | 'admin',
       phone: updatedUser!.phone,
       email: updatedUser!.email,
       name: updatedUser!.name,
-      language: updatedUser!.language,
+      language: updatedUser!.language as 'ar' | 'fr',
       farmLocation: updatedUser!.farmer ? {
         governorate: updatedUser!.farmer.governorate,
         delegation: updatedUser!.farmer.delegation,
@@ -265,7 +266,7 @@ export const updateProfileHandler = async (req: AuthRequest, res: Response) => {
       } : undefined,
       farmSize: updatedUser!.farmer?.farmSize,
       crops: updatedUser!.farmer?.crops || [],
-      subscriptionTier: updatedUser!.farmer?.subscriptionTier || 'FREE',
+      subscriptionTier: (updatedUser!.farmer?.subscriptionTier || 'FREE').toLowerCase() as 'free' | 'premium',
     };
 
     res.json(userData);
