@@ -1,10 +1,10 @@
 {
-  "name": "StartFarme - منصة التكنولوجيا الزراعية",
+  "name": "StartFarme - AgriTech Platform",
   "short_name": "StartFarme",
-  "description": "AgriTech platform for Tunisian farmers",
+  "description": "Plateforme AgriTech pour les agriculteurs tunisiens",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFFFFF",
+  "background_color": "#F5F5F5",
   "theme_color": "#2D8B3C",
   "orientation": "portrait-primary",
   "icons": [
@@ -20,9 +20,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "categories": ["agriculture", "business", "productivity"],
-  "lang": "ar",
-  "dir": "rtl"
+  ]
 }
-

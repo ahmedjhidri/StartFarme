@@ -1,101 +1,254 @@
 import axios from 'axios';
+import type { UserProfile, WeatherData, Crop, MarketPrice, Listing } from '../types';
 
-// API base URL - will be set from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
-// Create axios instance
-export const api = axios.create({
+const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor - add auth token
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const authStorage = localStorage.getItem('auth-storage');
-    if (authStorage) {
-      const { state } = JSON.parse(authStorage);
-      if (state?.user?.id) {
-        config.headers.Authorization = `Bearer ${state.user.id}`;
-      }
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle errors
+// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      localStorage.removeItem('auth-storage');
+      localStorage.removeItem('auth_token');
       window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
-// API endpoints
+// Mock mode - set to false when backend is ready
+// When backend is ready:
+// 1. Set MOCK_MODE = false
+// 2. Update API_BASE_URL in .env file
+// 3. Implement real API endpoints in backend
+// 4. Update authentication to use real JWT tokens
+// 5. Implement real SMS OTP service
+// 6. Connect to real weather API
+// 7. Connect to real market data sources
+const MOCK_MODE = true;
+
+// Auth API
 export const authAPI = {
-  sendOTP: (phone: string) => api.post('/auth/send-otp', { phone }),
-  verifyOTP: (phone: string, otp: string) => api.post('/auth/verify-otp', { phone, otp }),
-  getProfile: () => api.get('/auth/me'),
-};
-
-export const weatherAPI = {
-  getCurrent: (lat: number, lng: number) => api.get(`/weather/current?lat=${lat}&lng=${lng}`),
-  getForecast: (lat: number, lng: number, days: number = 7) => 
-    api.get(`/weather/forecast?lat=${lat}&lng=${lng}&days=${days}`),
-  getAlerts: (governorate: string) => api.get(`/weather/alerts?governorate=${governorate}`),
-};
-
-export const cropsAPI = {
-  getCrops: () => api.get('/crops'),
-  createCrop: (data: any) => api.post('/crops', data),
-  updateCrop: (id: string, data: any) => api.put(`/crops/${id}`, data),
-  deleteCrop: (id: string) => api.delete(`/crops/${id}`),
-  getCalendar: (crop: string, region: string) => 
-    api.get(`/crops/calendar?crop=${crop}&region=${region}`),
-};
-
-export const marketAPI = {
-  getPrices: (product?: string) => 
-    api.get(`/market/prices${product ? `?product=${product}` : ''}`),
-  getPriceHistory: (product: string, days: number = 30) => 
-    api.get(`/market/prices/history?product=${product}&days=${days}`),
-  getListings: (filters?: any) => api.get('/listings', { params: filters }),
-  createListing: (data: any) => api.post('/listings', data),
-  updateListing: (id: string, data: any) => api.put(`/listings/${id}`, data),
-  deleteListing: (id: string) => api.delete(`/listings/${id}`),
-};
-
-export const irrigationAPI = {
-  calculate: (data: any) => api.post('/irrigation/calculate', data),
-  getHistory: () => api.get('/irrigation/history'),
-  log: (data: any) => api.post('/irrigation/log', data),
-};
-
-export const pestDetectionAPI = {
-  detect: (image: File) => {
-    const formData = new FormData();
-    formData.append('image', image);
-    return api.post('/pest-detection', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  sendOTP: async (phone: string) => {
+    if (MOCK_MODE) {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return { success: true, message: 'OTP sent' };
+    }
+    const response = await api.post('/auth/send-otp', { phone });
+    return response.data;
   },
-  getHistory: () => api.get('/pest-detection/history'),
+  verifyOTP: async (phone: string, code: string) => {
+    if (MOCK_MODE) {
+      // Simulate API call - accept any 6-digit code for demo
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (code.length === 6) {
+        return { success: true, token: 'mock_token', user: null };
+      }
+      throw new Error('Invalid OTP code');
+    }
+    const response = await api.post('/auth/verify-otp', { phone, code });
+    return response.data;
+  },
+  getProfile: async (): Promise<UserProfile> => {
+    if (MOCK_MODE) {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+      throw new Error('User not found');
+    }
+    const response = await api.get('/auth/me');
+    return response.data;
+  },
+  updateProfile: async (data: Partial<UserProfile>): Promise<UserProfile> => {
+    if (MOCK_MODE) {
+      const stored = localStorage.getItem('user');
+      const user = stored ? JSON.parse(stored) : {};
+      const updated = { ...user, ...data };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    }
+    const response = await api.put('/auth/me', data);
+    return response.data;
+  },
 };
 
-export const forumAPI = {
-  getPosts: (filters?: any) => api.get('/forum/posts', { params: filters }),
-  createPost: (data: any) => api.post('/forum/posts', data),
-  addReply: (postId: string, data: any) => api.post(`/forum/posts/${postId}/replies`, data),
-  upvotePost: (postId: string) => api.put(`/forum/posts/${postId}/upvote`),
+// Weather API
+export const weatherAPI = {
+  getCurrent: async (lat: number, lng: number): Promise<WeatherData> => {
+    if (MOCK_MODE) {
+      // Return mock weather data
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return {
+        location: 'Tunis',
+        current: {
+          temp: 22,
+          humidity: 65,
+          rainfall: 0,
+          windSpeed: 15,
+          condition: 'Sunny',
+          conditionAr: 'مشمس',
+        },
+        forecast: [],
+      };
+    }
+    const response = await api.get(`/weather/current?lat=${lat}&lng=${lng}`);
+    return response.data;
+  },
+  getForecast: async (lat: number, lng: number, days: number = 7): Promise<WeatherData> => {
+    if (MOCK_MODE) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return {
+        location: 'Tunis',
+        current: {
+          temp: 22,
+          humidity: 65,
+          rainfall: 0,
+          windSpeed: 15,
+          condition: 'Sunny',
+          conditionAr: 'مشمس',
+        },
+        forecast: [],
+      };
+    }
+    const response = await api.get(`/weather/forecast?lat=${lat}&lng=${lng}&days=${days}`);
+    return response.data;
+  },
+  getAlerts: async (governorate: string) => {
+    if (MOCK_MODE) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return []; // No alerts in mock mode
+    }
+    const response = await api.get(`/weather/alerts?governorate=${governorate}`);
+    return response.data;
+  },
 };
 
+// Crops API
+export const cropsAPI = {
+  getAll: async (): Promise<Crop[]> => {
+    if (MOCK_MODE) {
+      const stored = localStorage.getItem('crops');
+      return stored ? JSON.parse(stored) : [];
+    }
+    const response = await api.get('/crops');
+    return response.data;
+  },
+  create: async (data: Omit<Crop, 'id' | 'farmerId'>): Promise<Crop> => {
+    if (MOCK_MODE) {
+      const crops = await cropsAPI.getAll();
+      const newCrop: Crop = {
+        ...data,
+        id: Date.now().toString(),
+        farmerId: '1', // Mock farmer ID
+      };
+      crops.push(newCrop);
+      localStorage.setItem('crops', JSON.stringify(crops));
+      return newCrop;
+    }
+    const response = await api.post('/crops', data);
+    return response.data;
+  },
+  update: async (id: string, data: Partial<Crop>): Promise<Crop> => {
+    if (MOCK_MODE) {
+      const crops = await cropsAPI.getAll();
+      const index = crops.findIndex(c => c.id === id);
+      if (index !== -1) {
+        crops[index] = { ...crops[index], ...data };
+        localStorage.setItem('crops', JSON.stringify(crops));
+        return crops[index];
+      }
+      throw new Error('Crop not found');
+    }
+    const response = await api.put(`/crops/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: string): Promise<void> => {
+    if (MOCK_MODE) {
+      const crops = await cropsAPI.getAll();
+      const filtered = crops.filter(c => c.id !== id);
+      localStorage.setItem('crops', JSON.stringify(filtered));
+      return;
+    }
+    await api.delete(`/crops/${id}`);
+  },
+  getCalendar: async (crop: string, region: string) => {
+    if (MOCK_MODE) {
+      return { crop, region, tasks: [] };
+    }
+    const response = await api.get(`/crops/calendar?crop=${crop}&region=${region}`);
+    return response.data;
+  },
+};
+
+// Market API
+export const marketAPI = {
+  getPrices: async (product?: string): Promise<MarketPrice[]> => {
+    if (MOCK_MODE) {
+      return [];
+    }
+    const response = await api.get('/market/prices', { params: { product } });
+    return response.data;
+  },
+  getPriceHistory: async (product: string, days: number = 30) => {
+    if (MOCK_MODE) {
+      return [];
+    }
+    const response = await api.get(`/market/prices/history?product=${product}&days=${days}`);
+    return response.data;
+  },
+  getListings: async (filters?: any): Promise<Listing[]> => {
+    if (MOCK_MODE) {
+      return [];
+    }
+    const response = await api.get('/listings', { params: filters });
+    return response.data;
+  },
+  createListing: async (data: Omit<Listing, 'id' | 'farmerId' | 'createdAt'>): Promise<Listing> => {
+    if (MOCK_MODE) {
+      const listing: Listing = {
+        ...data,
+        id: Date.now().toString(),
+        farmerId: '1',
+        createdAt: new Date(),
+      };
+      return listing;
+    }
+    const response = await api.post('/listings', data);
+    return response.data;
+  },
+  updateListing: async (id: string, data: Partial<Listing>): Promise<Listing> => {
+    if (MOCK_MODE) {
+      throw new Error('Not implemented in mock mode');
+    }
+    const response = await api.put(`/listings/${id}`, data);
+    return response.data;
+  },
+  deleteListing: async (id: string): Promise<void> => {
+    if (MOCK_MODE) {
+      return;
+    }
+    await api.delete(`/listings/${id}`);
+  },
+};
+
+export default api;

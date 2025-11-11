@@ -19,8 +19,11 @@ export default {
         error: '#F44336',
         info: '#2196F3',
       },
+      fontFamily: {
+        arabic: ['Noto Sans Arabic', 'sans-serif'],
+        sans: ['Inter', 'Roboto', 'sans-serif'],
+      },
     },
   },
   plugins: [],
 }
-

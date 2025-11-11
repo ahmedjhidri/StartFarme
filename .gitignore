@@ -27,16 +27,7 @@ dist-ssr
 .env
 .env.local
 .env.production
-.env.development
 
-# Build files
+# Build outputs
 build
-.cache
-
-# Testing
-coverage
-.nyc_output
-
-# Misc
-*.pem
-.vite
+*.tsbuildinfo

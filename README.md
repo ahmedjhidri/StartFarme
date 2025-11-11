@@ -1,62 +1,26 @@
 # StartFarme - AgriTech Platform for Tunisian Farmers
 
-A comprehensive mobile-first web application for Tunisian small farmers, addressing critical agricultural challenges including drought, lack of resources, and limited market access.
+A comprehensive AgriTech mobile-first web application designed to address critical agricultural challenges in Tunisia.
 
 ## Features
 
 ### Core Features (MVP)
+- ✅ Phone-based authentication (SMS OTP) - Demo mode enabled
+- ✅ Bilingual interface (Arabic RTL + French)
+- ✅ Weather dashboard with alerts
+- ✅ **Full crop management (CRUD)** - Add, edit, delete, and track crops
+- ✅ **Smart irrigation calculator** - Calculate water needs based on crop, soil, and weather
+- ✅ **Market prices & marketplace** - Real-time price charts and product listings
+- ✅ **Pest & disease detection** - AI-powered image recognition with treatment recommendations
+- ✅ **Community forum** - Post questions and interact with other farmers
+- ✅ **PWA support** - Offline functionality and installable app
+- ✅ User profile management
 
-1. **Authentication & User Management**
-   - SMS-based OTP verification
-   - Multi-language support (Arabic RTL + French)
-   - User profiles with farm information
-
-2. **Weather Dashboard & Alerts**
-   - Hyper-local weather based on coordinates
-   - 7-day forecast
-   - Critical alerts (frost, drought warnings)
-
-3. **Crop Management & Calendar**
-   - Crop library for Tunisia
-   - Region-specific planting calendars
-   - Task reminders and growth tracking
-
-4. **Smart Irrigation Calculator**
-   - Precise water amount calculations
-   - Weather-based recommendations
-   - Water consumption tracking
-
-5. **Market Prices & Marketplace**
-   - Real-time market prices
-   - Price history charts
-   - Farmer marketplace for product listings
-   - Buyer-farmer messaging
-
-6. **Pest & Disease Detection** (Coming Soon)
-   - AI-powered image recognition
-   - Treatment recommendations
-   - Expert verification
-
-7. **Community Forum & Expert Q&A**
-   - Category-based forums
-   - Expert badges
-   - Upvote/downvote system
-
-8. **Financial Services Integration** (Coming Soon)
-   - Micro-insurance marketplace
-   - Micro-loan connector
-   - Payment integration
-
-9. **Input Marketplace** (Coming Soon)
-   - Seeds, fertilizer, equipment
-   - Order tracking
-   - Delivery coordination
-
-10. **Analytics Dashboard** (Coming Soon)
-    - Revenue tracking
-    - Expense tracking
-    - Yield comparison
-    - Profitability analysis
+### Upcoming Features
+- Financial services integration
+- Input marketplace
+- Analytics dashboard
+- Real AI model integration for pest detection
 
 ## Tech Stack
 
@@ -68,22 +32,13 @@ A comprehensive mobile-first web application for Tunisian small farmers, address
 - **State Management**: Zustand
 - **Routing**: React Router
 - **Forms**: React Hook Form + Zod
-- **Charts**: Recharts
-- **Maps**: Leaflet (planned)
-
-### Backend (To be implemented)
-- Node.js + Express OR Python + FastAPI
-- PostgreSQL + Redis
-- AWS S3 or Cloudinary
-- JWT authentication
-- Tunisian SMS provider integration
-- Weather API integration
+- **API Client**: Axios
+- **Charts**: Recharts (for market price visualization)
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js 18+ (20+ recommended)
+- Node.js 18+ (recommended: 20+)
 - npm or yarn
 
 ### Installation
@@ -96,13 +51,19 @@ cd startfarme
 # Install dependencies
 npm install
 
+# Create .env file
+cp .env.example .env
+
 # Start development server
 npm run dev
+```
 
-# Build for production
+The application will be available at `http://localhost:5174` (port configured in vite.config.ts)
+
+### Build for Production
+
+```bash
 npm run build
-
-# Preview production build
 npm run preview
 ```
 
@@ -111,63 +72,47 @@ npm run preview
 ```
 startfarme/
 ├── src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/          # Page components
-│   ├── store/          # Zustand state management
-│   ├── services/       # API services
-│   ├── utils/          # Utility functions
-│   ├── types/          # TypeScript types
-│   ├── hooks/          # Custom React hooks
-│   ├── assets/         # Static assets
-│   └── styles/         # Global styles
-├── public/             # Public assets
-├── docs/               # Documentation
-└── README.md
+│   ├── components/       # React components
+│   │   ├── ui/          # Reusable UI components
+│   │   ├── layout/      # Layout components
+│   │   └── features/    # Feature-specific components
+│   ├── pages/           # Page components
+│   ├── services/        # API services
+│   ├── stores/          # Zustand stores
+│   ├── types/           # TypeScript types
+│   ├── utils/           # Utility functions
+│   └── assets/          # Static assets
+├── public/              # Public assets
+└── docs/                # Documentation
 ```
 
-## Development
+## Configuration
 
-### Adding a New Feature
-
-1. Create types in `src/types/index.ts`
-2. Create components in `src/components/`
-3. Create pages in `src/pages/`
-4. Add routes in `src/App.tsx`
-5. Update translations in `src/utils/i18n.ts`
-
-### Language Support
-
-The application supports Arabic (RTL) and French. Translations are managed in `src/utils/i18n.ts`.
-
-### Styling
-
-- Uses Tailwind CSS for styling
-- Custom colors defined in `tailwind.config.js`
-- RTL support automatically handled based on language
-
-## Environment Variables
+### Environment Variables
 
 Create a `.env` file in the root directory:
 
 ```env
-VITE_API_URL=http://localhost:3000/api
-VITE_SMS_API_KEY=your_sms_api_key
-VITE_WEATHER_API_KEY=your_weather_api_key
+VITE_API_BASE_URL=http://localhost:3000/api
 ```
 
-## Deployment
+### Mock Mode
 
-### Build for Production
+The application runs in **MOCK_MODE** by default, which allows frontend development without a backend. To switch to backend mode:
 
-```bash
-npm run build
-```
+1. Open `src/services/api.ts`
+2. Set `MOCK_MODE = false`
+3. Update `VITE_API_BASE_URL` in `.env`
+4. See `BACKEND_INTEGRATION.md` for detailed integration guide
 
-The build output will be in the `dist/` directory.
+## Development
 
-### PWA Setup
+### Available Scripts
 
-The application is set up as a Progressive Web App (PWA) for offline functionality and installability.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
 ## Contributing
 
@@ -178,8 +123,8 @@ The application is set up as a Progressive Web App (PWA) for offline functionali
 
 ## License
 
-MIT License
+MIT
 
-## Contact
+## Support
 
-For questions or support, please contact the development team.
+For support, email support@startfarme.tn or open an issue on GitHub.

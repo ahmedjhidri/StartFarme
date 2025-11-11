@@ -1,144 +1,189 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import { t } from '../utils/i18n';
-import { Phone, ArrowRight } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { LanguageToggle } from '../components/layout/LanguageToggle';
+import { useAuthStore } from '../stores/authStore';
+import { authAPI } from '../services/api';
 
-export const Login = () => {
+export const Login: React.FC = () => {
+  const navigate = useNavigate();
+  const { language, setUser } = useAuthStore();
   const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
+  const [code, setCode] = useState('');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [loading, setLoading] = useState(false);
-  const { setUser, language } = useAuthStore();
-  const navigate = useNavigate();
-
-  const handleSendOtp = async () => {
-    if (!phone || phone.length < 8) {
-      alert('يرجى إدخال رقم هاتف صحيح / Veuillez entrer un numéro de téléphone valide');
-      return;
-    }
-    
+  const [error, setError] = useState('');
+  
+  const handleSendOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
     setLoading(true);
-    // TODO: Implement actual OTP sending via API
-    // For now, simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    
+    try {
+      // Mock API call - replace with actual API
+      await authAPI.sendOTP(phone);
       setStep('otp');
-    }, 1000);
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otp || otp.length !== 6) {
-      alert('يرجى إدخال رمز التحقق / Veuillez entrer le code de vérification');
-      return;
-    }
-    
-    setLoading(true);
-    // TODO: Implement actual OTP verification via API
-    // For now, simulate API call and create mock user
-    setTimeout(() => {
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to send OTP');
+    } finally {
       setLoading(false);
-      setUser({
-        id: '1',
-        role: 'farmer',
-        phone,
-        name: 'مزارع تجريبي / Fermier Test',
-        language: language,
-        subscriptionTier: 'free',
-      });
-      navigate('/');
-    }, 1000);
+    }
   };
-
+  
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    
+    try {
+      // Mock API call - replace with actual API
+      await authAPI.verifyOTP(phone, code);
+      
+      // Mock user data - replace with actual response
+      const mockUser = {
+        id: '1',
+        role: 'farmer' as const,
+        phone,
+        name: 'Ahmed Ben Ali',
+        language: language,
+        farmLocation: {
+          governorate: 'Tunis',
+          delegation: 'Tunis Centre',
+          coordinates: { lat: 36.8065, lng: 10.1815 },
+        },
+        farmSize: 5,
+        crops: ['olives', 'wheat'],
+      };
+      
+      setUser(mockUser);
+      navigate('/weather');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Invalid OTP code');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const isArabic = language === 'ar';
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">StartFarme</h1>
-          <p className="text-gray-600">
-            {language === 'ar' 
-              ? 'منصة التكنولوجيا الزراعية للمزارعين التونسيين'
-              : 'Plateforme AgriTech pour les agriculteurs tunisiens'
-            }
-          </p>
-        </div>
-
-        {step === 'phone' ? (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('phoneNumber', language)}
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder={language === 'ar' ? 'رقم الهاتف' : 'Numéro de téléphone'}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  dir="ltr"
-                />
-              </div>
-            </div>
-            
-            <button
-              onClick={handleSendOtp}
-              disabled={loading}
-              className="w-full btn-primary flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <span>{t('loading', language)}</span>
-              ) : (
-                <>
-                  <span>{t('sendOtp', language)}</span>
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('otpCode', language)}
-              </label>
-              <input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder={language === 'ar' ? 'رمز التحقق (6 أرقام)' : 'Code de vérification (6 chiffres)'}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-center text-2xl tracking-widest"
-                dir="ltr"
-                maxLength={6}
-              />
-            </div>
-            
-            <button
-              onClick={handleVerifyOtp}
-              disabled={loading}
-              className="w-full btn-primary flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <span>{t('loading', language)}</span>
-              ) : (
-                <>
-                  <span>{t('verifyOtp', language)}</span>
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
-            
-            <button
-              onClick={() => setStep('phone')}
-              className="w-full text-sm text-gray-600 hover:text-primary"
-            >
-              {language === 'ar' ? 'تغيير رقم الهاتف' : 'Changer le numéro de téléphone'}
-            </button>
-          </div>
-        )}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="absolute top-4 left-4">
+        <LanguageToggle />
       </div>
+      
+      <Card className="w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {isArabic ? 'مرحباً بك في StartFarme' : 'Bienvenue sur StartFarme'}
+          </h1>
+          <p className="text-gray-600 mb-3">
+            {isArabic
+              ? 'منصة التكنولوجيا الزراعية للمزارعين التونسيين'
+              : 'Plateforme AgriTech pour les agriculteurs tunisiens'}
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-blue-800">
+              {isArabic
+                ? '⚠️ وضع التجربة: يمكنك استخدام أي رقم هاتف وأي رمز من 6 أرقام'
+                : '⚠️ Demo Mode: You can use any phone number and any 6-digit code'}
+            </p>
+          </div>
+        </div>
+        
+        {step === 'phone' ? (
+          <form onSubmit={handleSendOTP} className="space-y-4">
+            <Input
+              type="tel"
+              label={isArabic ? 'رقم الهاتف' : 'Numéro de téléphone'}
+              placeholder={isArabic ? 'مثال: +216 12 345 678' : 'Example: +216 12 345 678'}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {isArabic
+                ? '💡 يمكنك استخدام أي رقم للاختبار'
+                : '💡 You can use any number for testing'}
+            </p>
+            
+            {error && (
+              <div className="text-red-600 text-sm">{error}</div>
+            )}
+            
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full"
+              disabled={loading || !phone}
+            >
+              {loading
+                ? isArabic
+                  ? 'جاري الإرسال...'
+                  : 'Envoi en cours...'
+                : isArabic
+                ? 'إرسال رمز التحقق'
+                : 'Envoyer le code'}
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOTP} className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600 mb-4">
+                {isArabic
+                  ? `تم إرسال رمز التحقق إلى ${phone}`
+                  : `Code de vérification envoyé à ${phone}`}
+              </p>
+            </div>
+            
+            <Input
+              type="text"
+              label={isArabic ? 'رمز التحقق' : 'Code de vérification'}
+              placeholder={isArabic ? 'أدخل أي 6 أرقام' : 'Enter any 6 digits'}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+              maxLength={6}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {isArabic
+                ? '💡 أي رمز من 6 أرقام سيعمل (مثال: 123456)'
+                : '💡 Any 6-digit code will work (e.g., 123456)'}
+            </p>
+            
+            {error && (
+              <div className="text-red-600 text-sm">{error}</div>
+            )}
+            
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                className="flex-1"
+                onClick={() => setStep('phone')}
+              >
+                {isArabic ? 'رجوع' : 'Retour'}
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                className="flex-1"
+                disabled={loading || !code}
+              >
+                {loading
+                  ? isArabic
+                    ? 'جاري التحقق...'
+                    : 'Vérification...'
+                  : isArabic
+                  ? 'تحقق'
+                  : 'Vérifier'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Card>
     </div>
   );
 };
-

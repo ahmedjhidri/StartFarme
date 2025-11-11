@@ -1,145 +1,160 @@
-import { useAuthStore } from '../store/authStore';
-import { t } from '../utils/i18n';
-import { Cloud, Droplets, Wind, Thermometer, AlertTriangle } from 'lucide-react';
-import type { WeatherData } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Cloud, Droplet, Wind, AlertTriangle } from 'lucide-react';
+import { Card } from '../components/ui/Card';
+import { useAuthStore } from '../stores/authStore';
+import { weatherAPI } from '../services/api';
+import type { WeatherData, WeatherAlert } from '../types';
 
-// Mock weather data
-const mockWeatherData: WeatherData = {
-  location: 'Tunis',
-  current: {
-    temp: 24,
-    humidity: 65,
-    rainfall: 0,
-    windSpeed: 15,
-  },
-  forecast: [
-    { date: '2024-11-11', tempMin: 18, tempMax: 25, rainfall: 0, alerts: [] },
-    { date: '2024-11-12', tempMin: 19, tempMax: 26, rainfall: 2, alerts: [] },
-    { date: '2024-11-13', tempMin: 17, tempMax: 24, rainfall: 0, alerts: [] },
-    { date: '2024-11-14', tempMin: 16, tempMax: 23, rainfall: 0, alerts: [] },
-    { date: '2024-11-15', tempMin: 15, tempMax: 22, rainfall: 0, alerts: [] },
-    { date: '2024-11-16', tempMin: 14, tempMax: 21, rainfall: 0, alerts: [] },
-    { date: '2024-11-17', tempMin: 13, tempMax: 20, rainfall: 0, alerts: [] },
-  ],
-};
-
-export const Weather = () => {
-  const { language } = useAuthStore();
-  const weather = mockWeatherData;
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          {t('weather', language)}
-        </h1>
-
-        {/* Current Weather Card */}
-        <div className="card mb-6 bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                {weather.location}
-              </h2>
-              <p className="text-sm text-gray-600">
-                {language === 'ar' ? 'الطقس الحالي' : 'Conditions actuelles'}
-              </p>
-            </div>
-            <Cloud className="w-16 h-16 text-blue-500" />
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3">
-              <Thermometer className="w-8 h-8 text-red-500" />
-              <div>
-                <p className="text-sm text-gray-600">{t('temperature', language)}</p>
-                <p className="text-2xl font-bold">{weather.current.temp}°C</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Droplets className="w-8 h-8 text-blue-500" />
-              <div>
-                <p className="text-sm text-gray-600">{t('humidity', language)}</p>
-                <p className="text-2xl font-bold">{weather.current.humidity}%</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Droplets className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600">{t('rainfall', language)}</p>
-                <p className="text-2xl font-bold">{weather.current.rainfall}mm</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Wind className="w-8 h-8 text-gray-500" />
-              <div>
-                <p className="text-sm text-gray-600">{t('windSpeed', language)}</p>
-                <p className="text-2xl font-bold">{weather.current.windSpeed} km/h</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 7-Day Forecast */}
-        <div className="card mb-6">
-          <h2 className="text-xl font-semibold mb-4">
-            {language === 'ar' ? 'التنبؤ لـ 7 أيام' : 'Prévisions 7 jours'}
-          </h2>
-          <div className="overflow-x-auto">
-            <div className="flex gap-4 pb-4">
-              {weather.forecast.map((day, index) => (
-                <div
-                  key={index}
-                  className="flex-shrink-0 w-32 text-center p-4 bg-gray-50 rounded-lg"
-                >
-                  <p className="text-sm text-gray-600 mb-2">
-                    {new Date(day.date).toLocaleDateString(language === 'ar' ? 'ar-TN' : 'fr-FR', {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </p>
-                  <div className="flex items-center justify-center mb-2">
-                    <Cloud className="w-8 h-8 text-blue-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-lg font-bold">{day.tempMax}°</p>
-                    <p className="text-sm text-gray-500">{day.tempMin}°</p>
-                    {day.rainfall > 0 && (
-                      <p className="text-xs text-blue-600 flex items-center justify-center gap-1">
-                        <Droplets className="w-3 h-3" />
-                        {day.rainfall}mm
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Weather Alerts */}
-        <div className="card bg-yellow-50 border-yellow-200">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-            <div>
-              <h3 className="font-semibold text-yellow-900 mb-1">
-                {language === 'ar' ? 'التنبيهات' : 'Alertes'}
-              </h3>
-              <p className="text-sm text-yellow-800">
-                {language === 'ar'
-                  ? 'لا توجد تنبيهات طقس نشطة حالياً'
-                  : 'Aucune alerte météo active pour le moment'
-                }
-              </p>
-            </div>
-          </div>
+export const Weather: React.FC = () => {
+  const { user, language } = useAuthStore();
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [alerts, setAlerts] = useState<WeatherAlert[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const isArabic = language === 'ar';
+  
+  useEffect(() => {
+    const loadWeather = async () => {
+      if (!user?.farmLocation?.coordinates) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const { lat, lng } = user.farmLocation.coordinates;
+        const data = await weatherAPI.getCurrent(lat, lng);
+        setWeather(data);
+        
+        // Load alerts
+        if (user.farmLocation.governorate) {
+          const alertData = await weatherAPI.getAlerts(user.farmLocation.governorate);
+          setAlerts(alertData);
+        }
+      } catch (error) {
+        console.error('Failed to load weather:', error);
+        // Mock data for development
+        setWeather({
+          location: user.farmLocation.governorate || 'Tunis',
+          current: {
+            temp: 22,
+            humidity: 65,
+            rainfall: 0,
+            windSpeed: 15,
+            condition: 'Sunny',
+            conditionAr: 'مشمس',
+          },
+          forecast: [],
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadWeather();
+  }, [user]);
+  
+  if (loading) {
+    return (
+      <div className="p-4">
+        <div className="text-center py-8">
+          <p className="text-gray-600">{isArabic ? 'جاري تحميل بيانات الطقس...' : 'Chargement des données météo...'}</p>
         </div>
       </div>
+    );
+  }
+  
+  if (!weather) {
+    return (
+      <div className="p-4">
+        <Card>
+          <p className="text-gray-600 text-center">
+            {isArabic
+              ? 'يرجى إضافة موقع المزرعة في الملف الشخصي لعرض بيانات الطقس'
+              : 'Veuillez ajouter l\'emplacement de la ferme dans le profil pour afficher les données météo'}
+          </p>
+        </Card>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="p-4 pb-20 md:pb-4">
+      <h1 className="text-2xl font-bold mb-4">
+        {isArabic ? 'الطقس' : 'Météo'}
+      </h1>
+      
+      {alerts.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {alerts.map((alert, index) => (
+            <Card key={index} className="border-l-4 border-warning bg-warning bg-opacity-10">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-warning mb-1">
+                    {isArabic ? alert.messageAr : alert.message}
+                  </h3>
+                  <p className="text-sm text-gray-700">
+                    {alert.actionRequired}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+      
+      <Card title={isArabic ? 'الحالة الحالية' : 'Conditions actuelles'}>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-3">
+            <Cloud className="w-8 h-8 text-primary" />
+            <div>
+              <p className="text-2xl font-bold">{weather.current.temp}°C</p>
+              <p className="text-sm text-gray-600">
+                {isArabic ? weather.current.conditionAr : weather.current.condition}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Droplet className="w-8 h-8 text-info" />
+            <div>
+              <p className="text-lg font-semibold">{weather.current.humidity}%</p>
+              <p className="text-sm text-gray-600">
+                {isArabic ? 'رطوبة' : 'Humidité'}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Droplet className="w-8 h-8 text-blue-500" />
+            <div>
+              <p className="text-lg font-semibold">{weather.current.rainfall}mm</p>
+              <p className="text-sm text-gray-600">
+                {isArabic ? 'أمطار' : 'Pluie'}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Wind className="w-8 h-8 text-gray-500" />
+            <div>
+              <p className="text-lg font-semibold">{weather.current.windSpeed} km/h</p>
+              <p className="text-sm text-gray-600">
+                {isArabic ? 'رياح' : 'Vent'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+      
+      <Card 
+        title={isArabic ? 'الموقع' : 'Localisation'} 
+        className="mt-4"
+      >
+        <p className="text-gray-700">
+          {user?.farmLocation?.governorate}, {user?.farmLocation?.delegation}
+        </p>
+      </Card>
     </div>
   );
 };
-

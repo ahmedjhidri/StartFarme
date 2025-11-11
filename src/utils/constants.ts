@@ -1,4 +1,4 @@
-// Tunisian governorates
+// Tunisian Governorates
 export const GOVERNORATES = [
   'Ariana',
   'Béja',
@@ -26,7 +26,34 @@ export const GOVERNORATES = [
   'Zaghouan',
 ];
 
-// Common crops in Tunisia
+export const GOVERNORATES_AR = [
+  'أريانة',
+  'باجة',
+  'بن عروس',
+  'بنزرت',
+  'قابس',
+  'قفصة',
+  'جندوبة',
+  'القيروان',
+  'القصرين',
+  'قبلي',
+  'الكاف',
+  'المهدية',
+  'منوبة',
+  'مدنين',
+  'المنستير',
+  'نابل',
+  'صفاقس',
+  'سيدي بوزيد',
+  'سليانة',
+  'سوسة',
+  'تطاوين',
+  'توزر',
+  'تونس',
+  'زغوان',
+];
+
+// Common Crops in Tunisia
 export const CROPS = [
   { name: 'Olives', nameAr: 'الزيتون', category: 'fruits' },
   { name: 'Dates', nameAr: 'التمر', category: 'fruits' },
@@ -34,13 +61,15 @@ export const CROPS = [
   { name: 'Barley', nameAr: 'الشعير', category: 'grains' },
   { name: 'Tomatoes', nameAr: 'الطماطم', category: 'vegetables' },
   { name: 'Peppers', nameAr: 'الفلفل', category: 'vegetables' },
+  { name: 'Potatoes', nameAr: 'البطاطس', category: 'vegetables' },
+  { name: 'Onions', nameAr: 'البصل', category: 'vegetables' },
   { name: 'Citrus', nameAr: 'الحمضيات', category: 'fruits' },
+  { name: 'Almonds', nameAr: 'اللوز', category: 'fruits' },
   { name: 'Grapes', nameAr: 'العنب', category: 'fruits' },
-  { name: 'Almonds', nameAr: 'اللوز', category: 'nuts' },
-  { name: 'Pistachios', nameAr: 'الفستق', category: 'nuts' },
+  { name: 'Figs', nameAr: 'التين', category: 'fruits' },
 ];
 
-// Subscription tiers
+// Subscription Tiers
 export const SUBSCRIPTION_TIERS = {
   free: {
     price: 0,
@@ -50,6 +79,13 @@ export const SUBSCRIPTION_TIERS = {
       'Community forum access',
       '5 pest detections/month',
       'Standard support',
+    ],
+    featuresAr: [
+      'توقعات الطقس لـ 3 أيام',
+      'أسعار السوق الأساسية',
+      'الوصول إلى منتدى المجتمع',
+      '5 كشف للآفات/شهر',
+      'دعم قياسي',
     ],
   },
   premium: {
@@ -64,36 +100,29 @@ export const SUBSCRIPTION_TIERS = {
       'Reduced marketplace commission (3% vs 5%)',
       'Analytics dashboard',
     ],
+    featuresAr: [
+      'توقعات الطقس لـ 14 يوماً',
+      'تنبيهات الطقس كل ساعة (SMS)',
+      'جداول الري المتقدمة',
+      'كشف غير محدود للآفات',
+      'تنبؤات أسعار السوق',
+      'دعم الخبراء ذو الأولوية',
+      'عمولة سوق مخفضة (3% بدلاً من 5%)',
+      'لوحة تحليل',
+    ],
   },
 };
 
-// Crop coefficients for irrigation calculation
-export const CROP_COEFFICIENTS: Record<string, number> = {
-  olives: 0.65,
-  dates: 0.85,
-  wheat: 0.95,
-  barley: 0.95,
-  tomatoes: 1.15,
-  peppers: 1.05,
-  citrus: 0.95,
-  grapes: 0.85,
-  almonds: 0.75,
-  pistachios: 0.75,
+// Translation helper
+export const t = (key: string, lang: 'ar' | 'fr' = 'ar'): string => {
+  const translations: Record<string, { ar: string; fr: string }> = {
+    'app.name': { ar: 'StartFarme', fr: 'StartFarme' },
+    'nav.weather': { ar: 'الطقس', fr: 'Météo' },
+    'nav.crops': { ar: 'المحاصيل', fr: 'Cultures' },
+    'nav.market': { ar: 'السوق', fr: 'Marché' },
+    'nav.community': { ar: 'المجتمع', fr: 'Communauté' },
+    'nav.profile': { ar: 'الملف الشخصي', fr: 'Profil' },
+  };
+  
+  return translations[key]?.[lang] || key;
 };
-
-// Soil types
-export const SOIL_TYPES = [
-  { value: 'sandy', label: 'Sandy', labelAr: 'رملية' },
-  { value: 'clay', label: 'Clay', labelAr: 'طينية' },
-  { value: 'loam', label: 'Loam', labelAr: 'طميية' },
-  { value: 'mixed', label: 'Mixed', labelAr: 'مختلطة' },
-];
-
-// Units
-export const UNITS = {
-  weight: ['kg', 'ton', 'g'],
-  volume: ['liter', 'm³'],
-  area: ['hectare', 'm²'],
-  length: ['m', 'cm'],
-};
-

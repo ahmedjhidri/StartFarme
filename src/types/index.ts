@@ -1,32 +1,30 @@
-// User roles
+// User types
 export type UserRole = 'farmer' | 'buyer' | 'expert' | 'admin';
-
-// Language options
 export type Language = 'ar' | 'fr' | 'ar-fr';
+export type SubscriptionTier = 'free' | 'premium';
 
-// User profile structure
 export interface UserProfile {
   id: string;
   role: UserRole;
-  phone: string; // Primary identifier (not everyone has email)
-  name: string;
+  phone: string;
   email?: string;
+  name: string;
   language: Language;
-  // Farmer-specific
   farmLocation?: {
     governorate: string;
     delegation: string;
     coordinates: { lat: number; lng: number };
   };
   farmSize?: number; // in hectares
-  crops?: string[]; // ['olives', 'dates', 'wheat', etc.]
-  // Buyer-specific
+  crops?: string[];
   businessType?: 'restaurant' | 'supermarket' | 'cooperative' | 'exporter';
   purchaseCapacity?: string;
-  subscriptionTier?: 'free' | 'premium';
+  subscriptionTier?: SubscriptionTier;
+  createdAt?: Date;
+  lastActive?: Date;
 }
 
-// Weather data
+// Weather types
 export interface WeatherData {
   location: string;
   current: {
@@ -34,6 +32,8 @@ export interface WeatherData {
     humidity: number;
     rainfall: number;
     windSpeed: number;
+    condition: string;
+    conditionAr: string;
   };
   forecast: {
     date: string;
@@ -52,7 +52,7 @@ export interface WeatherAlert {
   actionRequired: string;
 }
 
-// Crop management
+// Crop types
 export interface Crop {
   id: string;
   name: string;
@@ -76,7 +76,7 @@ export interface CropCalendar {
   }[];
 }
 
-// Irrigation
+// Irrigation types
 export interface IrrigationCalculation {
   farmerId: string;
   crop: string;
@@ -93,7 +93,7 @@ export interface IrrigationCalculation {
   };
 }
 
-// Market prices
+// Market types
 export interface MarketPrice {
   product: string;
   productAr: string;
@@ -116,6 +116,7 @@ export interface Listing {
   id: string;
   farmerId: string;
   product: string;
+  productAr: string;
   quantity: number;
   unit: string;
   pricePerUnit: number;
@@ -126,14 +127,15 @@ export interface Listing {
   photos: string[];
   description: string;
   status: 'available' | 'reserved' | 'sold';
+  createdAt: Date;
 }
 
-// Pest detection
+// Pest Detection types
 export interface PestDetection {
   id: string;
   farmerId: string;
   cropAffected: string;
-  image: File | string;
+  image: string;
   detectionResult: {
     pestName: string;
     pestNameAr: string;
@@ -152,7 +154,7 @@ export interface PestDetection {
   timestamp: Date;
 }
 
-// Forum
+// Forum types
 export interface ForumPost {
   id: string;
   authorId: string;
@@ -179,80 +181,18 @@ export interface Reply {
   createdAt: Date;
 }
 
-// Financial services
-export interface MicroInsurance {
-  id: string;
-  farmerId: string;
-  crop: string;
-  coverage: number; // TND
-  premium: number; // TND per season
-  coverageType: 'drought' | 'frost' | 'flood' | 'pest' | 'comprehensive';
-  startDate: Date;
-  endDate: Date;
-  status: 'active' | 'claimed' | 'expired';
-}
-
-export interface MicroLoan {
-  id: string;
-  farmerId: string;
-  amount: number; // TND
-  purpose: 'seeds' | 'fertilizer' | 'equipment' | 'irrigation' | 'other';
-  interestRate: number;
-  repaymentSchedule: {
-    dueDate: Date;
-    amount: number;
-    paid: boolean;
-  }[];
-  status: 'pending' | 'approved' | 'active' | 'paid' | 'defaulted';
-}
-
-// Input marketplace
-export interface InputProduct {
-  id: string;
-  supplierId: string;
-  category: 'seeds' | 'fertilizer' | 'pesticide' | 'tools' | 'irrigation';
-  name: string;
-  nameAr: string;
-  description: string;
-  price: number;
-  unit: string;
-  stock: number;
-  images: string[];
-  certifications?: string[];
-  suitableFor: string[];
-}
-
+// Order types
 export interface Order {
   id: string;
-  farmerId: string;
-  items: {
-    productId: string;
-    quantity: number;
-    price: number;
-  }[];
+  listingId: string;
+  buyerId: string;
+  sellerId: string;
+  quantity: number;
   totalAmount: number;
-  deliveryAddress: string;
+  commission: number;
   paymentMethod: 'cash' | 'mobile-wallet' | 'card';
+  deliveryAddress: string;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  createdAt: Date;
   deliveryDate?: Date;
 }
-
-// Analytics
-export interface FarmerAnalytics {
-  farmerId: string;
-  period: 'month' | 'season' | 'year';
-  metrics: {
-    totalRevenue: number;
-    totalExpenses: number;
-    netProfit: number;
-    cropYield: { crop: string; yield: number; unit: string }[];
-    waterUsage: number; // cubic meters
-    costPerHectare: number;
-    profitPerCrop: { crop: string; profit: number }[];
-  };
-  insights: {
-    bestPerformingCrop: string;
-    recommendations: string[];
-  };
-}
-

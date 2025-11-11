@@ -1,74 +1,75 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
-import { Navigation } from './components/Navigation';
-import { LanguageToggle } from './components/LanguageToggle';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAuthStore } from './stores/authStore';
+import { AppLayout } from './components/layout/AppLayout';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
-import { Home } from './pages/Home';
 import { Weather } from './pages/Weather';
 import { Crops } from './pages/Crops';
+import { Irrigation } from './pages/Irrigation';
 import { Market } from './pages/Market';
-import { Forum } from './pages/Forum';
+import { Community } from './pages/Community';
+import { PestDetection } from './pages/PestDetection';
 import { Profile } from './pages/Profile';
-import { useEffect } from 'react';
 
 function App() {
-  const { isAuthenticated, language } = useAuthStore();
+  const { isAuthenticated, language, setLanguage } = useAuthStore();
 
-  // Update document direction and language based on user preference
+  // Initialize language on mount
   useEffect(() => {
-    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = language;
+    const storedLang = localStorage.getItem('language') as 'ar' | 'fr' | null;
+    if (storedLang && (storedLang === 'ar' || storedLang === 'fr')) {
+      setLanguage(storedLang);
+    } else {
+      setLanguage('ar');
+    }
+  }, [setLanguage]);
+
+  // Update document direction and language
+  useEffect(() => {
+    document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', language);
   }, [language]);
 
-  // Protected Route Component
-  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (!isAuthenticated) {
-      return <Navigate to="/login" replace />;
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        useAuthStore.getState().setUser(user);
+      } catch (error) {
+        console.error('Failed to load user from storage:', error);
+      }
     }
-    return <>{children}</>;
-  };
+  }, []);
 
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" replace />} />
         <Route
-          path="/*"
+          path="/login"
+          element={!isAuthenticated ? <Login /> : <Navigate to="/weather" replace />}
+        />
+        <Route
           element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-gray-50">
-                {/* Header */}
-                <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-                  <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-primary">StartFarme</h1>
-                    <LanguageToggle />
-                  </div>
-                </header>
-
-                {/* Main Content */}
-                <div className="flex">
-                  {/* Navigation - Sidebar on desktop, bottom bar on mobile */}
-                  <Navigation />
-
-                  {/* Page Content */}
-                  <main className="flex-1 md:ml-64">
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/weather" element={<Weather />} />
-                      <Route path="/crops" element={<Crops />} />
-                      <Route path="/market" element={<Market />} />
-                      <Route path="/forum" element={<Forum />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                  </main>
-                </div>
-              </div>
+              <AppLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="/" element={<Navigate to="/weather" replace />} />
+          <Route path="/weather" element={<Weather />} />
+          <Route path="/crops" element={<Crops />} />
+          <Route path="/irrigation" element={<Irrigation />} />
+          <Route path="/market" element={<Market />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/pest-detection" element={<PestDetection />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="*" element={<Navigate to="/weather" replace />} />
+        </Route>
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
 
