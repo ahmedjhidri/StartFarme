@@ -35,15 +35,9 @@ api.interceptors.response.use(
 );
 
 // Mock mode - set to false when backend is ready
-// When backend is ready:
-// 1. Set MOCK_MODE = false
-// 2. Update API_BASE_URL in .env file
-// 3. Implement real API endpoints in backend
-// 4. Update authentication to use real JWT tokens
-// 5. Implement real SMS OTP service
-// 6. Connect to real weather API
-// 7. Connect to real market data sources
-const MOCK_MODE = true;
+// ✅ Backend is ready and configured!
+// Backend API is available at http://localhost:3000/api
+const MOCK_MODE = false; // ✅ Using real backend API
 
 // Auth API
 export const authAPI = {
