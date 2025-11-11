@@ -40,10 +40,18 @@ export const Crops: React.FC = () => {
   
   const loadCrops = async () => {
     try {
+      setLoading(true);
       const data = await cropsAPI.getAll();
       setCrops(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load crops:', error);
+      // Show error message to user
+      if (error.response?.status === 401) {
+        // User not authenticated, redirect to login
+        window.location.href = '/login';
+      }
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -55,24 +63,24 @@ export const Crops: React.FC = () => {
       if (editingCrop) {
         // Update existing crop
         await cropsAPI.update(editingCrop.id, {
-          name: formData.name,
-          nameAr: CROPS.find(c => c.name === formData.name)?.nameAr || formData.name,
+          cropName: formData.name,
+          cropNameAr: CROPS.find(c => c.name === formData.name)?.nameAr || formData.name,
           variety: formData.variety,
           plantingDate: new Date(formData.plantingDate),
           harvestDate: new Date(formData.harvestDate),
           fieldSize: parseFloat(formData.fieldSize),
-          status: formData.status,
+          status: formData.status.toUpperCase() as any,
         });
       } else {
         // Create new crop
         await cropsAPI.create({
-          name: formData.name,
-          nameAr: CROPS.find(c => c.name === formData.name)?.nameAr || formData.name,
+          cropName: formData.name,
+          cropNameAr: CROPS.find(c => c.name === formData.name)?.nameAr || formData.name,
           variety: formData.variety,
           plantingDate: new Date(formData.plantingDate),
           harvestDate: new Date(formData.harvestDate),
           fieldSize: parseFloat(formData.fieldSize),
-          status: formData.status,
+          status: formData.status.toUpperCase() as any,
         });
       }
       
@@ -98,12 +106,12 @@ export const Crops: React.FC = () => {
   const handleEdit = (crop: Crop) => {
     setEditingCrop(crop);
     setFormData({
-      name: crop.name,
+      name: crop.name || (crop as any).cropName || '',
       variety: crop.variety || '',
       plantingDate: new Date(crop.plantingDate).toISOString().split('T')[0],
       harvestDate: new Date(crop.harvestDate).toISOString().split('T')[0],
       fieldSize: crop.fieldSize.toString(),
-      status: crop.status,
+      status: (crop.status?.toLowerCase() || 'planning') as Crop['status'],
     });
     setShowForm(true);
   };

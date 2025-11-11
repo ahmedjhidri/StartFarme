@@ -41,10 +41,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user, isAuthenticated: !!user });
     if (user && typeof window !== 'undefined') {
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('auth_token', 'mock_token'); // Replace with actual token
+      // Token should already be saved in localStorage by login handler
+      // Don't overwrite it here
     } else if (typeof window !== 'undefined') {
       localStorage.removeItem('user');
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
     }
   },
   setLanguage: (lang) => {

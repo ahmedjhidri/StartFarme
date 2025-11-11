@@ -38,29 +38,34 @@ export const Login: React.FC = () => {
     setLoading(true);
     
     try {
-      // Mock API call - replace with actual API
-      await authAPI.verifyOTP(phone, code);
+      // Verify OTP with backend
+      const response = await authAPI.verifyOTP(phone, code);
       
-      // Mock user data - replace with actual response
-      const mockUser = {
-        id: '1',
-        role: 'farmer' as const,
-        phone,
-        name: 'Ahmed Ben Ali',
-        language: language,
-        farmLocation: {
-          governorate: 'Tunis',
-          delegation: 'Tunis Centre',
-          coordinates: { lat: 36.8065, lng: 10.1815 },
-        },
-        farmSize: 5,
-        crops: ['olives', 'wheat'],
-      };
+      // Save token to localStorage
+      if (response.token) {
+        localStorage.setItem('auth_token', response.token);
+        if (response.refreshToken) {
+          localStorage.setItem('refresh_token', response.refreshToken);
+        }
+      }
       
-      setUser(mockUser);
-      navigate('/weather');
+      // Set user data from API response
+      if (response.user) {
+        setUser(response.user);
+        navigate('/weather');
+      } else {
+        // Fallback: fetch user profile
+        try {
+          const userProfile = await authAPI.getProfile();
+          setUser(userProfile);
+          navigate('/weather');
+        } catch (profileError) {
+          setError('Failed to load user profile');
+        }
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid OTP code');
+      console.error('Login error:', err);
+      setError(err.response?.data?.error || err.message || 'Invalid OTP code');
     } finally {
       setLoading(false);
     }
