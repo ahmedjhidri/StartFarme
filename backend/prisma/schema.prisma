@@ -1,0 +1,324 @@
+// Prisma schema for StartFarme database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users table
+model User {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  email     String?
+  name      String
+  role      UserRole @default(FARMER)
+  language  String   @default("ar")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastActive DateTime?
+
+  // Relations
+  farmer      Farmer?
+  buyer       Buyer?
+  expert      Expert?
+  crops       Crop[]
+  listings    Listing[]
+  ordersAsBuyer  Order[] @relation("OrderBuyer")
+  ordersAsSeller Order[] @relation("OrderSeller")
+  forumPosts  ForumPost[]
+  replies     Reply[]
+  pestDetections PestDetection[]
+
+  @@index([phone])
+  @@index([role])
+}
+
+enum UserRole {
+  FARMER
+  BUYER
+  EXPERT
+  ADMIN
+}
+
+// Farmers table
+model Farmer {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  governorate String?
+  delegation  String?
+  latitude    Float?
+  longitude   Float?
+  farmSize    Float?   // in hectares
+  crops       String[] // Array of crop names
+  subscriptionTier SubscriptionTier @default(FREE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+}
+
+// Buyers table
+model Buyer {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  businessType  String?  // restaurant, supermarket, cooperative, exporter
+  purchaseCapacity String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Experts table
+model Expert {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  specialization String?
+  verified    Boolean  @default(false)
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Crops table
+model Crop {
+  id           String    @id @default(uuid())
+  farmerId     String
+  cropName     String
+  cropNameAr   String
+  variety      String?
+  plantingDate DateTime
+  harvestDate  DateTime
+  fieldSize    Float     // in hectares
+  status       CropStatus @default(PLANNING)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  farmer User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  @@index([farmerId])
+  @@index([status])
+}
+
+enum CropStatus {
+  PLANNING
+  PLANTED
+  GROWING
+  HARVESTING
+  HARVESTED
+}
+
+// Market Prices table
+model MarketPrice {
+  id        String   @id @default(uuid())
+  product   String
+  productAr String
+  category  String
+  unit      String
+  marketName String
+  priceMin  Float
+  priceMax  Float
+  priceAvg  Float
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([product])
+  @@index([category])
+  @@index([date])
+}
+
+// Listings table
+model Listing {
+  id          String       @id @default(uuid())
+  farmerId    String
+  product     String
+  productAr   String
+  quantity    Float
+  unit        String
+  pricePerUnit Float
+  negotiable  Boolean      @default(true)
+  location    String
+  harvestDate DateTime
+  quality     ProductQuality
+  photos      String[]     // Array of image URLs
+  description String?
+  status      ListingStatus @default(AVAILABLE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  farmer User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([farmerId])
+  @@index([status])
+  @@index([product])
+}
+
+enum ProductQuality {
+  GRADE_A
+  GRADE_B
+  ORGANIC
+}
+
+enum ListingStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+// Orders table
+model Order {
+  id           String      @id @default(uuid())
+  listingId    String
+  buyerId      String
+  sellerId     String
+  quantity     Float
+  totalAmount  Float
+  commission   Float
+  paymentMethod String
+  deliveryAddress String
+  status       OrderStatus @default(PENDING)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  deliveryDate DateTime?
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer   User    @relation("OrderBuyer", fields: [buyerId], references: [id])
+  seller  User    @relation("OrderSeller", fields: [sellerId], references: [id])
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// Forum Posts table
+model ForumPost {
+  id            String   @id @default(uuid())
+  authorId      String
+  category      String
+  title         String
+  content       String
+  images        String[] // Array of image URLs
+  tags          String[]
+  upvotes       Int      @default(0)
+  expertVerified Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replies Reply[]
+
+  @@index([authorId])
+  @@index([category])
+  @@index([createdAt])
+}
+
+// Replies table
+model Reply {
+  id             String   @id @default(uuid())
+  postId         String
+  authorId       String
+  content        String
+  upvotes        Int      @default(0)
+  isAcceptedAnswer Boolean @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  post   ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+// Pest Detections table
+model PestDetection {
+  id            String   @id @default(uuid())
+  farmerId      String
+  cropAffected  String
+  imageUrl      String
+  pestName      String
+  pestNameAr    String
+  confidence    Float
+  severity      String
+  description   String
+  descriptionAr String
+  treatment     Json     // Store treatment as JSON
+  estimatedLoss String
+  expertVerified Boolean @default(false)
+  createdAt     DateTime @default(now())
+
+  farmer User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  @@index([farmerId])
+  @@index([cropAffected])
+}
+
+// Weather Alerts table
+model WeatherAlert {
+  id          String   @id @default(uuid())
+  governorate String
+  alertType   String
+  severity    String
+  message     String
+  messageAr   String
+  actionRequired String
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([governorate])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+// OTP Storage (for Redis, but we'll also store in DB for backup)
+model OTP {
+  id        String   @id @default(uuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+  @@index([expiresAt])
+}
+
+// Irrigation History table
+model IrrigationHistory {
+  id          String   @id @default(uuid())
+  farmerId    String
+  cropId      String?
+  fieldSize   Float
+  soilType    String
+  waterAmount Float    // in liters
+  timing      String   // morning or evening
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([farmerId])
+  @@index([date])
+}
+
