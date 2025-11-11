@@ -165,11 +165,11 @@ export const getMeHandler = async (req: AuthRequest, res: Response) => {
 
     const userData = {
       id: user.id,
-      role: user.role,
+      role: user.role.toLowerCase() as 'farmer' | 'buyer' | 'expert' | 'admin',
       phone: user.phone,
       email: user.email,
       name: user.name,
-      language: user.language,
+      language: user.language as 'ar' | 'fr',
       farmLocation: user.farmer ? {
         governorate: user.farmer.governorate,
         delegation: user.farmer.delegation,
@@ -180,7 +180,7 @@ export const getMeHandler = async (req: AuthRequest, res: Response) => {
       } : undefined,
       farmSize: user.farmer?.farmSize,
       crops: user.farmer?.crops || [],
-      subscriptionTier: user.farmer?.subscriptionTier || 'FREE',
+      subscriptionTier: (user.farmer?.subscriptionTier || 'FREE').toLowerCase() as 'free' | 'premium',
       businessType: user.buyer?.businessType,
       purchaseCapacity: user.buyer?.purchaseCapacity,
     };
