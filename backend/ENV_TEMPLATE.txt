@@ -1,0 +1,51 @@
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/startfarme?schema=public"
+
+# JWT
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
+JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-in-production"
+JWT_EXPIRES_IN="7d"
+JWT_REFRESH_EXPIRES_IN="30d"
+
+# Server
+PORT=3000
+NODE_ENV=development
+
+# CORS
+CORS_ORIGIN="http://localhost:5174"
+
+# SMS Service (Tunisian SMS Provider)
+SMS_API_KEY="your-sms-api-key"
+SMS_API_URL="https://api.sms-provider.tn"
+SMS_SENDER="StartFarme"
+
+# Redis (for caching and OTP storage)
+REDIS_URL="redis://localhost:6379"
+
+# File Upload
+MAX_FILE_SIZE=5242880
+UPLOAD_DIR="./uploads"
+
+# Weather API
+WEATHER_API_KEY="your-weather-api-key"
+WEATHER_API_URL="https://api.openweathermap.org/data/2.5"
+
+# Payment Gateway
+PAYMENT_GATEWAY_URL="https://api.payment-gateway.tn"
+PAYMENT_GATEWAY_KEY="your-payment-gateway-key"
+
+# AI/ML Service (for pest detection)
+AI_API_URL="https://api.ai-service.com"
+AI_API_KEY="your-ai-api-key"
+
+# AWS S3 (for file storage)
+AWS_ACCESS_KEY_ID="your-aws-access-key"
+AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
+AWS_REGION="us-east-1"
+AWS_S3_BUCKET="startfarme-uploads"
+
+# Cloudinary (alternative to S3)
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+
