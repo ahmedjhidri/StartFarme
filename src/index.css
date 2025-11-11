@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Primary - Agriculture green */
+  --primary: #2D8B3C;
+  --primary-dark: #1E6029;
+  --primary-light: #4CAF50;
+  
+  /* Secondary - Earth tones */
+  --secondary: #8D6E63;
+  --accent: #FF9800; /* Alerts/warnings */
+  
+  /* Neutrals */
+  --background: #F5F5F5;
+  --surface: #FFFFFF;
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  
+  /* Status colors */
+  --success: #4CAF50;
+  --warning: #FF9800;
+  --error: #F44336;
+  --info: #2196F3;
+}
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+    font-family: 'Inter', 'Noto Sans Arabic', system-ui, sans-serif;
+  }
+  
+  [dir="rtl"] {
+    font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+  }
+}
