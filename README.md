@@ -125,6 +125,23 @@ The application runs in **MOCK_MODE** by default, which allows frontend developm
 
 MIT
 
+## Roadmap
+
+See [ROADMAP.md](./ROADMAP.md) for the complete development roadmap and [NEXT_STEPS.md](./NEXT_STEPS.md) for immediate next steps.
+
+## Next Steps
+
+1. **Backend Development** - Build the API server (Node.js + Express recommended)
+2. **Database Setup** - Set up PostgreSQL database with schema
+3. **Authentication** - Implement SMS OTP service and JWT tokens
+4. **API Integration** - Connect frontend to backend (set `MOCK_MODE = false`)
+5. **External Services** - Integrate SMS, weather, and payment services
+6. **Deployment** - Deploy to production (Vercel/Netlify for frontend, AWS/DigitalOcean for backend)
+7. **Testing** - User testing and feedback
+8. **Launch** - Public launch and marketing
+
+See [NEXT_STEPS.md](./NEXT_STEPS.md) for detailed action items.
+
 ## Support
 
 For support, email support@startfarme.tn or open an issue on GitHub.
